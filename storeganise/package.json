@@ -1,0 +1,11 @@
+{
+  "name": "storeganise",
+  "version": "1.0.0",
+  "description": "Finverse webhooks integration with Storeganise",
+  "main": "index.js",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google-cloud/functions-framework": "^3.4.2"
+  }
+}
