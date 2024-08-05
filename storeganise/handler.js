@@ -4,7 +4,57 @@ async function finverseWebhookHandler(req, res, finverseSdk, storeganiseSdk) {
 
   // will handle payments webhooks
   if (req.path === '/payments') {
-    // TODO: Handle payment webhooks
+    const {
+      event_type,
+      event_time,
+      payment_id,
+      payment_method_id,
+      external_user_id,
+      metadata,
+    } = req.body;
+    if (event_type !== 'PAYMENT_EXECUTED' && event_type !== 'PAYMENT_FAILED') {
+      // only handle payment success/failure
+      return res.send('OK');
+    }
+
+    // Expectation: Should pass storeganise invoice id in metadata with key `sg_invoice_id`
+    const storeganiseInvoiceId = metadata?.sg_invoice_id;
+    const invoice = await storeganiseSdk.getInvoice(storeganiseInvoiceId);
+
+    if (invoice.state === 'failed' || invoice.state === 'paid') {
+      // if the invoice has already been marked into a final state, then no further action needed
+      return res.send('OK');
+    }
+
+    if (event_type === 'PAYMENT_EXECUTED') {
+      if (typeof payment_method_id === 'string' && payment_method_id !== '') {
+        // save the latest payment method used for a payment onto the storeganise user
+        await storeganiseSdk.savePaymentMethod(
+          payment_method_id,
+          external_user_id
+        );
+      }
+
+      const payment = await finverseSdk.getPayment(payment_id);
+      // Finverse amount is in cents, whereas Storeganise expects amount in dollar amount
+      const paymentAmount = payment.amount / 100;
+
+      // Record the payment on the storeganise invoice
+      await storeganiseSdk.writePaymentToInvoice(
+        storeganiseInvoiceId,
+        paymentAmount,
+        event_time,
+        payment_id
+      );
+    }
+
+    // regardless of EXECUTED or FAILED, we should update the invoice status
+    const storeganiseInvoiceStatus =
+      event_type === 'PAYMENT_EXECUTED' ? 'paid' : 'failed';
+    await storeganiseSdk.setInvoiceStatus(
+      storeganiseInvoiceId,
+      storeganiseInvoiceStatus
+    );
     return res.send('OK');
   }
 
