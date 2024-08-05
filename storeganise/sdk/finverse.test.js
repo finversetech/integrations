@@ -28,3 +28,21 @@ describe('test isTokenValid()', () => {
     jest.useRealTimers();
   });
 });
+
+describe('Finverse SDK', () => {
+  const sdk = new FinverseSdk('clientId', 'clientSecret');
+
+  beforeEach(() => {
+    jest.restoreAllMocks();
+    sdk.fetchFinverse = jest.fn();
+  });
+
+  test('getPayment', async () => {
+    sdk.fetchFinverse.mockResolvedValue('PAYMENT_RESPONSE');
+
+    const resp = await sdk.getPayment('paymentId');
+    expect(resp).toBe('PAYMENT_RESPONSE');
+    expect(sdk.fetchFinverse).toHaveBeenCalledTimes(1);
+    expect(sdk.fetchFinverse).toHaveBeenCalledWith('payments/paymentId');
+  });
+});
