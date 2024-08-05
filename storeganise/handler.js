@@ -10,7 +10,7 @@ const storeganiseBusinessCode = process.env.storeganise_business_code;
 const storeganiseApiKey = process.env.storeganise_api_key;
 
 // Finverse client id and secrets are sensitive fields and should be stored in the appropriate location for secrets
-// currently string as runtime variables as part of v1. Should move to secret manager as part of official production-ization
+// currently storing as runtime variables as part of v1. Should move to secret manager as part of official production-ization
 const finverseClientId = process.env.finverse_client_id;
 const finverseClientSecret = process.env.finverse_client_secret;
 
