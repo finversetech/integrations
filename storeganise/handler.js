@@ -88,7 +88,7 @@ function convertFinverseAmountToStoreganiseAmount(amount) {
   const dividedAmountInString = `${strAmount.substring(
     0,
     strAmount.length - 2
-  )}.${strAmount.length - 2}`;
+  )}.${strAmount.substring(strAmount.length - 2)}`;
   return parseFloat(dividedAmountInString);
 }
 
