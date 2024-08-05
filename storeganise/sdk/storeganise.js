@@ -64,9 +64,6 @@ class StoreganiseSdk {
           },
         },
       });
-      console.log(
-        `saved payment method ${finversePaymentMethodId} to ${storeganiseUserId}`
-      );
     } catch (err) {
       console.log('Got error saving payment method', err);
       throw err;
@@ -97,9 +94,6 @@ class StoreganiseSdk {
           type: 'manual',
         },
       });
-      console.log(
-        `Wrote amount ${paymentAmount} to invoice ${storeganiseInvoiceId}`
-      );
     } catch (err) {
       console.log('Got error writing payment to invoice', err);
       throw err;
@@ -114,7 +108,6 @@ class StoreganiseSdk {
   async getInvoice(storeganiseInvoiceId) {
     try {
       const resp = await this.fetchSg(`invoices/${storeganiseInvoiceId}`);
-      console.log(`Fetched invoice ${storeganiseInvoiceId}`);
       return resp;
     } catch (err) {
       console.log('got error fetching invoice', err);
@@ -135,7 +128,6 @@ class StoreganiseSdk {
           state: status,
         },
       });
-      console.log(`Set invoice ${storeganiseInvoiceId} to status ${status}`);
     } catch (err) {
       console.log('Got error setting invoice status ', err);
       throw err;
