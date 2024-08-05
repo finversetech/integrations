@@ -39,7 +39,9 @@ async function finverseWebhookHandler(req, res, finverseSdk, storeganiseSdk) {
 
       const payment = await finverseSdk.getPayment(payment_id);
       // Finverse amount is in cents, whereas Storeganise expects amount in dollar amount
-      const paymentAmount = payment.amount / 100;
+      const paymentAmount = convertFinverseAmountToStoreganiseAmount(
+        payment.amount
+      );
 
       // Record the payment on the storeganise invoice
       await storeganiseSdk.writePaymentToInvoice(
@@ -74,6 +76,20 @@ async function finverseWebhookHandler(req, res, finverseSdk, storeganiseSdk) {
   }
 
   return res.status(404).send(`Path not found: ${req.path}`);
+}
+
+/**
+ * Converts finverse amount (in cents) to storeganise amount (in dollars)
+ * @param {number} amount - Finverse amount in cents (expect to always be an integer)
+ */
+function convertFinverseAmountToStoreganiseAmount(amount) {
+  // we cannot just do /100 here because js can have float bugs
+  const strAmount = amount.toString();
+  const dividedAmountInString = `${strAmount.substring(
+    0,
+    strAmount.length - 2
+  )}.${strAmount.length - 2}`;
+  return parseFloat(dividedAmountInString);
 }
 
 module.exports = {
