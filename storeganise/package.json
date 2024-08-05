@@ -6,7 +6,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@google-cloud/functions-framework": "^3.4.2"
+    "@google-cloud/functions-framework": "^3.4.2",
+    "decimal.js": "^10.4.3"
   },
   "devDependencies": {
     "jest": "^29.7.0"

@@ -1,3 +1,5 @@
+const Decimal = require('decimal.js');
+
 // This function will handle the incoming HTTP request (i.e. the webhook)
 async function finverseWebhookHandler(req, res, finverseSdk, storeganiseSdk) {
   // TODO: Should verify signature of webhook and ensure it is from Finverse
@@ -84,12 +86,9 @@ async function finverseWebhookHandler(req, res, finverseSdk, storeganiseSdk) {
  */
 function convertFinverseAmountToStoreganiseAmount(amount) {
   // we cannot just do /100 here because js can have float bugs
-  const strAmount = amount.toString();
-  const dividedAmountInString = `${strAmount.substring(
-    0,
-    strAmount.length - 2
-  )}.${strAmount.substring(strAmount.length - 2)}`;
-  return parseFloat(dividedAmountInString);
+  const finverseAmount = new Decimal(amount);
+  const storeganiseAmount = finverseAmount.div(100);
+  return storeganiseAmount.toNumber();
 }
 
 module.exports = {
