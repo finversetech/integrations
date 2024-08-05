@@ -4,7 +4,7 @@ const Decimal = require('decimal.js');
 async function finverseWebhookHandler(req, res, finverseSdk, storeganiseSdk) {
   const isSignatureValid = finverseSdk.verifySignature(
     req.rawBody.toString(),
-    res.headers['fv-signature']
+    req.headers['fv-signature']
   );
 
   if (!isSignatureValid) {
