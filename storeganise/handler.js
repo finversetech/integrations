@@ -23,6 +23,8 @@ async function finverseWebhookHandler(req, res, finverseSdk, storeganiseSdk) {
 
     if (invoice.state === 'failed' || invoice.state === 'paid') {
       // if the invoice has already been marked into a final state, then no further action needed
+      // This check is to make sure we don't double-process a webhook and record multiple payments
+      // Storeganise also implements some level of idempotency to ensure identical payments don't get recorded multiple times
       return res.send('OK');
     }
 
