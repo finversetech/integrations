@@ -1,27 +1,5 @@
-const { FinverseSdk } = require('./sdk/finverse');
-const { StoreganiseSdk } = require('./sdk/storeganise');
-
-// the business code is a non-sensitive field. e.g. "dev-finverse"
-// it is okay to store this field as a run-time variable
-const storeganiseBusinessCode = process.env.storeganise_business_code;
-
-// the storeganise API key is a sensitive field that should be stored in the appropriate location for secrets
-// currently storing it as a runtime variable as part of v1. Should move to secret manager as part of official production-ization
-const storeganiseApiKey = process.env.storeganise_api_key;
-
-// Finverse client id and secrets are sensitive fields and should be stored in the appropriate location for secrets
-// currently storing as runtime variables as part of v1. Should move to secret manager as part of official production-ization
-const finverseClientId = process.env.finverse_client_id;
-const finverseClientSecret = process.env.finverse_client_secret;
-
 // This function will handle the incoming HTTP request (i.e. the webhook)
-async function finverseWebhookHandler(req, res) {
-  const _finverseSdk = new FinverseSdk(finverseClientId, finverseClientSecret);
-  const _storeganiseSdk = new StoreganiseSdk(
-    storeganiseBusinessCode,
-    storeganiseApiKey
-  );
-
+async function finverseWebhookHandler(req, res, finverseSdk, storeganiseSdk) {
   // TODO: Should verify signature of webhook and ensure it is from Finverse
 
   // will handle payments webhooks
@@ -32,7 +10,14 @@ async function finverseWebhookHandler(req, res) {
 
   // will handle payment link webhooks
   if (req.path === '/payment_links') {
-    // TODO: Handle payment link webhooks
+    const { event_type } = req.body;
+    if (event_type !== 'PAYMENT_LINK_SETUP_SUCCEEDED') {
+      // we will not handle events other than PAYMENT_LINK_SETUP_SUCCEEDED
+      return res.send('OK');
+    }
+    const { payment_method_id, external_user_id } = req.body;
+    // Expectation: The storeganise user's id is passed to finverse as the external_user_id
+    await storeganiseSdk.savePaymentMethod(payment_method_id, external_user_id);
     return res.send('OK');
   }
 
