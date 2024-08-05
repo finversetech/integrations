@@ -1,4 +1,4 @@
-export default class StoreganiseSdk {
+class StoreganiseSdk {
   /**
    * The entity's business code. This determines which URL to hit
    * @type string
@@ -10,6 +10,11 @@ export default class StoreganiseSdk {
    */
   apiKey;
 
+  /**
+   *
+   * @param {string} businessCode
+   * @param {string} apiKey
+   */
   constructor(businessCode, apiKey) {
     this.businessCode = businessCode;
     this.apiKey = apiKey;
@@ -17,7 +22,7 @@ export default class StoreganiseSdk {
 
   async fetchSg(path, { method, body, params } = {}) {
     return fetch(
-      `https://${sgBusinessCode}.storeganise.com/api/v1/admin/${path}` +
+      `https://${this.businessCode}.storeganise.com/api/v1/admin/${path}` +
         (params
           ? '?' +
             Object.entries(params || {})
@@ -31,7 +36,7 @@ export default class StoreganiseSdk {
       {
         method,
         headers: {
-          Authorization: `ApiKey ${sgApiKey}`,
+          Authorization: `ApiKey ${this.apiKey}`,
           ...(body && { 'Content-Type': 'application/json' }),
         },
         body: body && JSON.stringify(body),
@@ -137,3 +142,7 @@ export default class StoreganiseSdk {
     }
   }
 }
+
+module.exports = {
+  StoreganiseSdk,
+};
