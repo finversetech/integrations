@@ -1,4 +1,4 @@
-class StoreganiseSdk {
+export default class StoreganiseSdk {
   /**
    * The entity's business code. This determines which URL to hit
    * @type string
@@ -119,7 +119,7 @@ class StoreganiseSdk {
 
   /**
    * Update status of storeganise invoice
-   * @param {string} storeganiseInvoiceId 
+   * @param {string} storeganiseInvoiceId
    * @param {string} status - can be value `paid` or `failed`
    */
   async setInvoiceStatus(storeganiseInvoiceId, status) {
