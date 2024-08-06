@@ -39,7 +39,7 @@ class StoreganiseSdk {
           Authorization: `ApiKey ${this.apiKey}`,
           ...(body && { 'Content-Type': 'application/json' }),
         },
-        body: body && JSON.stringify(body),
+        body: typeof body === 'object' ? JSON.stringify(body) : body,
       }
     ).then(async (r) => {
       const data = await r.json().catch(() => ({}));
@@ -73,7 +73,7 @@ class StoreganiseSdk {
   /**
    * Add a payment to Storeganise invoice
    * @param {string} storeganiseInvoiceId
-   * @param {number} paymentAmount - amount in dollars, i.e. for a `$12.34` payment, the value should be `12.34`
+   * @param {string} paymentAmount - amount in dollars, i.e. for a `$12.34` payment, the value should be "12.34"
    * @param {string} paymentTime - time in ISO string format (YYYY-MM-DDTHH:mm:ss.0000Z)
    * @param {string} finversePaymentId
    */
@@ -83,16 +83,14 @@ class StoreganiseSdk {
     paymentTime,
     finversePaymentId
   ) {
+    // Note: We are templating the string version of the payment amount into the JSON to avoid any floating point precision bugs
+    const requestBody = `{"amount":${paymentAmount},"date":"${
+      paymentTime.split('T')[0]
+    }","method":"other","notes":"Finverse payment ${finversePaymentId}","type":"manual"}`;
     try {
       await this.fetchSg(`invoices/${storeganiseInvoiceId}/payments`, {
         method: 'POST',
-        body: {
-          amount: paymentAmount,
-          date: paymentTime.split('T')[0], // convert ISO string format to YYYY-MM-DD
-          method: 'other',
-          notes: `Finverse payment ${finversePaymentId}`,
-          type: 'manual',
-        },
+        body: requestBody,
       });
     } catch (err) {
       console.log('Got error writing payment to invoice', err);

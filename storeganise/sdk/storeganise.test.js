@@ -26,23 +26,25 @@ describe('Storeganise SDK', () => {
   test('writePaymentToInvoice()', async () => {
     await sdk.writePaymentToInvoice(
       'storeganiseInvoiceId',
-      12345,
+      '123.45',
       '2024-08-05T11:00:00.000000Z',
       'finversePaymentId'
     );
+
+    const expectedJsonBody = {
+      amount: 123.45,
+      date: '2024-08-05',
+      method: 'other',
+      notes: 'Finverse payment finversePaymentId',
+      type: 'manual',
+    };
 
     expect(sdk.fetchSg).toHaveBeenCalledTimes(1);
     expect(sdk.fetchSg).toHaveBeenCalledWith(
       'invoices/storeganiseInvoiceId/payments',
       {
         method: 'POST',
-        body: {
-          amount: 12345,
-          date: '2024-08-05',
-          method: 'other',
-          notes: 'Finverse payment finversePaymentId',
-          type: 'manual',
-        },
+        body: JSON.stringify(expectedJsonBody),
       }
     );
   });
