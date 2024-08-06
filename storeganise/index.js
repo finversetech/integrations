@@ -17,7 +17,7 @@ const finverseClientId = process.env.finverse_client_id;
 const finverseClientSecret = process.env.finverse_client_secret;
 
 // Should set the entry point in Google Cloud Functions to `storeganiseHelper` so that it uses this function
-functions.http('storeganiseHelper', async () => {
+functions.http('storeganiseHelper', async (req, res) => {
   const finverseSdk = new FinverseSdk(finverseClientId, finverseClientSecret);
   const storeganiseSdk = new StoreganiseSdk(
     storeganiseBusinessCode,
