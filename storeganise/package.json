@@ -12,7 +12,6 @@
   "devDependencies": {
     "jest": "^29.7.0"
   },
-  "type": "module",
   "scripts": {
     "test": "node ./node_modules/jest/bin/jest.js ./"
   }
