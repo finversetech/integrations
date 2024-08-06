@@ -1,3 +1,11 @@
+const crypto = require('crypto');
+
+// used to verify webhook signatures. Can be retrieved from https://docs.finverse.com/#bf53157c-8de2-418f-be88-38f81332be4b
+const finversePublicKey = `-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEuZId/6U0gKLodSihwC/EuMGtULx8
+G3r7X7nZ3KWO5uNVtRTC64MH/1faq9zRp/2iIjCT8erSxiyO6y8wnlqMqw==
+-----END PUBLIC KEY-----`;
+
 /**
  * Checks if a given JWT token is valid (i.e. it expires >5 seconds from now)
  * @param {string} token
@@ -114,6 +122,24 @@ class FinverseSdk {
       console.log('got error fetching payment', err);
       throw err;
     }
+  }
+
+  /**
+   * Verify the signature of the webhook to confirm that the sender is Finverse
+   * @param {string} payload - Raw payload
+   * @param {string} signature - Signature as found in fv-signature header
+   */
+  verifySignature(payload, signature) {
+    // signature is encoded in base64 and should be decoded
+    const decodedSignature = Buffer.from(signature, 'base64');
+    const textEncoder = new TextEncoder();
+    // signature is created on the raw payload in bytes
+    const payloadInBytes = textEncoder.encode(payload);
+
+    const publicKey = crypto.createPublicKey(finversePublicKey);
+    const verify = crypto.createVerify('SHA256');
+    verify.update(payloadInBytes).end();
+    return verify.verify(publicKey, decodedSignature);
   }
 }
 

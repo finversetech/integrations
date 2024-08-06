@@ -45,4 +45,19 @@ describe('Finverse SDK', () => {
     expect(sdk.fetchFinverse).toHaveBeenCalledTimes(1);
     expect(sdk.fetchFinverse).toHaveBeenCalledWith('payments/paymentId');
   });
+
+  test('verifySignature', async () => {
+    const validPayload =
+      '{"login_identity_id":"01J4GWV95W745T23YJKPNBSK2T","event_type":"AUTHENTICATED","event_time":"2024-08-05T09:10:15.05107677Z","event_id":""}';
+    const validSignature =
+      'MEYCIQDCIzUGnMBucExKXQHRYR4JAY6jRFueIGbrZ/1BNu77PgIhAOqXe7BWflzykJzRP5dAlqMxrWllTDqnjinRbOuLBK/A';
+
+    const invalidPayload = '{"key":"value"}';
+    const invalidSignature = 'abcdefghi';
+
+    expect(sdk.verifySignature(validPayload, validSignature)).toBe(true);
+    expect(sdk.verifySignature(validPayload, invalidSignature)).toBe(false);
+    expect(sdk.verifySignature(invalidPayload, validSignature)).toBe(false);
+    expect(sdk.verifySignature(invalidPayload, invalidSignature)).toBe(false);
+  });
 });
