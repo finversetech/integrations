@@ -70,7 +70,7 @@ describe('finverseWebhookHandler', () => {
       expect(mockStoreganiseSdk.writePaymentToInvoice).toHaveBeenCalledTimes(1);
       expect(mockStoreganiseSdk.writePaymentToInvoice).toHaveBeenCalledWith(
         'storeganiseInvoiceId',
-        123.45,
+        '123.45',
         'eventTime',
         'finversePaymentId'
       );
