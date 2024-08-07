@@ -80,7 +80,7 @@ describe('Finverse SDK', () => {
     jest.useRealTimers();
   });
 
-  test('setAndRefreshToken - valid token', async () => {
+  test('setAndRefreshToken - invalid token', async () => {
     const expiredToken =
       'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJPbmxpbmUgSldUIEJ1aWxkZXIiLCJpYXQiOjE3MjI4MzQxMzAsImV4cCI6MTcyMjgzNDEzNiwiYXVkIjoid3d3LmV4YW1wbGUuY29tIiwic3ViIjoianJvY2tldEBleGFtcGxlLmNvbSJ9.OTDgk3sWWAVfUZMREFH10yruP6ASDoI2ulCyceod7Xc';
 

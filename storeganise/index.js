@@ -25,6 +25,8 @@ const cachedValues = {
 
 // Should set the entry point in Google Cloud Functions to `storeganiseHelper` so that it uses this function
 functions.http('storeganiseHelper', async (req, res) => {
+  // Potential improvement: Verify fv-signature before requesting secrets and setting up SDKs
+  
   if (cachedValues.finverseClientId === '') {
     cachedValues.finverseClientId = await readSecret(
       secretManagerClient,
