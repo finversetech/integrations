@@ -5,6 +5,7 @@ const { StoreganiseSdk } = require('./sdk/storeganise');
 const mockSecretClient = {
   accessSecretVersion: jest.fn(),
 };
+const mockFinverseWebhookHandler = jest.fn();
 
 jest.mock('@google-cloud/secret-manager', () => {
   return {
@@ -16,7 +17,7 @@ jest.mock('./sdk/finverse');
 jest.mock('./sdk/storeganise');
 jest.mock('./handler', () => {
   return {
-    finverseWebhookHandler: jest.fn(),
+    finverseWebhookHandler: mockFinverseWebhookHandler,
   };
 });
 
@@ -61,17 +62,19 @@ describe('Storeganise Helper', () => {
     expect(mockSecretClient.accessSecretVersion).toHaveBeenCalledTimes(0);
     expect(FinverseSdk).toHaveBeenCalledTimes(0);
     expect(StoreganiseSdk).toHaveBeenCalledTimes(0);
+    expect(mockFinverseWebhookHandler).toHaveBeenCalledTimes(0);
   });
 
   test('valid signature', async () => {
     FinverseSdk.verifySignature = jest.fn().mockReturnValueOnce(true);
-    // mock the finverse sdk constructor
-    FinverseSdk.mockImplementation(() => {
-      return {
-        setCachedTokenOrRefresh: jest.fn(),
-        getToken: jest.fn(),
-      };
-    });
+    const mockFinverseSdk = {
+      setCachedTokenOrRefresh: jest.fn(),
+      getToken: jest.fn(),
+    };
+    const mockStoreganiseSdk = {};
+    // mock the sdk constructors
+    FinverseSdk.mockImplementation(() => mockFinverseSdk);
+    StoreganiseSdk.mockImplementation(() => mockStoreganiseSdk);
     mockSecretClient.accessSecretVersion
       .mockReturnValueOnce([{ payload: { data: 'finverseClientId' } }])
       .mockReturnValueOnce([{ payload: { data: 'finverseClientSecret' } }])
@@ -108,6 +111,13 @@ describe('Storeganise Helper', () => {
     expect(StoreganiseSdk).toHaveBeenCalledWith(
       'businesscode',
       'storeganiseApiKey'
+    );
+    expect(mockFinverseWebhookHandler).toHaveBeenCalledTimes(1);
+    expect(mockFinverseWebhookHandler).toHaveBeenCalledWith(
+      req,
+      res,
+      mockFinverseSdk,
+      mockStoreganiseSdk
     );
   });
 });
