@@ -8,16 +8,17 @@ const { finverseWebhookHandler } = require('./handler');
 // it is okay to store this field as a run-time variable
 const storeganiseBusinessCode = process.env.storeganise_business_code;
 
+// the finverse client id is a non-sensitive field, okay to store as run-time variable
+const finverseClientId = process.env.finverse_client_id;
+
 const secretNames = {
   storeganiseApiKey: process.env.storeganise_api_key,
-  finverseClientId: process.env.finverse_client_id,
   finverseClientSecret: process.env.finverse_client_secret,
 };
 
 const secretManagerClient = new SecretManagerServiceClient();
 // cache the secret values so that we don't need to fetch the values every time we get a request
 const cachedValues = {
-  finverseClientId: '',
   finverseClientSecret: '',
   storeganiseApiKey: '',
   finverseCustomerToken: '',
@@ -35,12 +36,6 @@ functions.http('storeganiseHelper', async (req, res) => {
     return res.status(401).send('Unauthorized');
   }
 
-  if (cachedValues.finverseClientId === '') {
-    cachedValues.finverseClientId = await readSecret(
-      secretManagerClient,
-      secretNames.finverseClientId
-    );
-  }
   if (cachedValues.finverseClientSecret === '') {
     cachedValues.finverseClientSecret = await readSecret(
       secretManagerClient,
@@ -55,7 +50,7 @@ functions.http('storeganiseHelper', async (req, res) => {
   }
 
   const finverseSdk = new FinverseSdk(
-    cachedValues.finverseClientId,
+    finverseClientId,
     cachedValues.finverseClientSecret
   );
   const storeganiseSdk = new StoreganiseSdk(
