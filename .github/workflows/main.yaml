@@ -12,20 +12,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-
-      - name: Navigate to storeganise directory
-        run: cd storeganise/
       
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run tests
-        run: npm test
-
-      - name: Navigate back to parent directory
-        run: cd ..
+      - name: Run unit tests for storeganise
+        working-directory: ./storeganise
+        run: |
+          npm install
+          npm test
