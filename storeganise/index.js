@@ -25,8 +25,16 @@ const cachedValues = {
 
 // Should set the entry point in Google Cloud Functions to `storeganiseHelper` so that it uses this function
 functions.http('storeganiseHelper', async (req, res) => {
-  // Potential improvement: Verify fv-signature before requesting secrets and setting up SDKs
-  
+  const isSignatureValid = FinverseSdk.verifySignature(
+    req.rawBody.toString(),
+    req.headers['fv-signature']
+  );
+
+  if (!isSignatureValid) {
+    // if signature is not valid, i.e. webhook was not sent by Finverse, we should return 401
+    return res.status(401).send('Unauthorized');
+  }
+
   if (cachedValues.finverseClientId === '') {
     cachedValues.finverseClientId = await readSecret(
       secretManagerClient,
