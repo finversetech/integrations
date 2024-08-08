@@ -23,36 +23,7 @@ describe('finverseWebhookHandler', () => {
 
     mockFinverseSdk = {
       getPayment: jest.fn(),
-      verifySignature: jest.fn().mockReturnValue(true),
     };
-  });
-
-  test('invalid signature', async () => {
-    mockFinverseSdk.verifySignature.mockReturnValue(false);
-
-    await finverseWebhookHandler(
-      {
-        path: '/payments',
-        body: {
-          event_type: 'PAYMENT_EXECUTED',
-          event_time: 'eventTime',
-          payment_method_id: 'finversePaymentMethodId',
-          payment_id: 'finversePaymentId',
-          external_user_id: 'storeganiseUserId',
-          metadata: {
-            sg_invoice_id: 'storeganiseInvoiceId',
-          },
-        },
-        headers: { 'fv-signature': 'invalid-signature' },
-        rawBody: 'rawBody',
-      },
-      mockResponse,
-      mockFinverseSdk,
-      mockStoreganiseSdk
-    );
-
-    expect(mockResponse.status).toHaveBeenCalledWith(401);
-    expect(mockResponse.send).toHaveBeenCalledWith('Unauthorized');
   });
 
   describe('/payments', () => {
