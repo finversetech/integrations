@@ -85,6 +85,32 @@ describe('finverseWebhookHandler', () => {
       expect(mockResponse.send).toHaveBeenCalledWith('OK');
     });
 
+    test('PAYMENT_EXECUTED - missing sg_invoice_id in metadata', async () => {
+      await finverseWebhookHandler(
+        {
+          body: {
+            event_type: 'PAYMENT_EXECUTED',
+            event_time: 'eventTime',
+            payment_method_id: 'finversePaymentMethodId',
+            payment_id: 'finversePaymentId',
+            external_user_id: 'storeganiseUserId',
+            metadata: {},
+          },
+          headers: { 'fv-signature': 'signature' },
+          rawBody: 'rawBody',
+        },
+        mockResponse,
+        mockFinverseSdk,
+        mockStoreganiseSdk
+      );
+
+      expect(mockResponse.status).toHaveBeenCalledTimes(1);
+      expect(mockResponse.status).toHaveBeenCalledWith(400);
+
+      expect(mockResponse.send).toHaveBeenCalledTimes(1);
+      expect(mockResponse.send).toHaveBeenCalledWith('missing sg_invoice_id in metadata');
+    });
+
     test('PAYMENT_EXECUTED - invoice already paid', async () => {
       mockStoreganiseSdk.getInvoice.mockResolvedValue({
         state: 'paid',

@@ -27,8 +27,8 @@ const cachedValues = {
 // Should set the entry point in Google Cloud Functions to `storeganiseHelper` so that it uses this function
 functions.http('storeganiseHelper', async (req, res) => {
   const isSignatureValid = FinverseSdk.verifySignature(
-    req.rawBody.toString(),
-    req.headers['fv-signature']
+    req.rawBody?.toString() ?? '',
+    req.headers['fv-signature'] ?? ''
   );
 
   if (!isSignatureValid) {

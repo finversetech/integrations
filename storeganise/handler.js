@@ -21,6 +21,12 @@ async function finverseWebhookHandler(req, res, finverseSdk, storeganiseSdk) {
 
     // Expectation: Should pass storeganise invoice id in metadata with key `sg_invoice_id`
     const storeganiseInvoiceId = metadata?.sg_invoice_id;
+
+    if (typeof storeganiseInvoiceId !== "string") {
+      console.log("Got non-string invoice id. Metadata does not contain appropriate sg_invoice_id")
+      return res.status(400).send("missing sg_invoice_id in metadata")
+    }
+
     const invoice = await storeganiseSdk.getInvoice(storeganiseInvoiceId);
 
     if (invoice.state === 'failed' || invoice.state === 'paid') {
