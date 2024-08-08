@@ -25,6 +25,7 @@ jest.mock('./handler', () => {
 process.env = {
   ...process.env,
   storeganise_business_code: 'businesscode',
+  finverse_client_id: 'finverseClientId',
 };
 
 // load the index file now
@@ -76,7 +77,6 @@ describe('Storeganise Helper', () => {
     FinverseSdk.mockImplementation(() => mockFinverseSdk);
     StoreganiseSdk.mockImplementation(() => mockStoreganiseSdk);
     mockSecretClient.accessSecretVersion
-      .mockReturnValueOnce([{ payload: { data: 'finverseClientId' } }])
       .mockReturnValueOnce([{ payload: { data: 'finverseClientSecret' } }])
       .mockReturnValueOnce([{ payload: { data: 'storeganiseApiKey' } }]);
 
@@ -100,7 +100,7 @@ describe('Storeganise Helper', () => {
       'rawBody',
       'SignatureBASE64'
     );
-    expect(mockSecretClient.accessSecretVersion).toHaveBeenCalledTimes(3);
+    expect(mockSecretClient.accessSecretVersion).toHaveBeenCalledTimes(2);
 
     expect(FinverseSdk).toHaveBeenCalledTimes(1);
     expect(FinverseSdk).toHaveBeenCalledWith(

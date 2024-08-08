@@ -2,23 +2,31 @@ const Decimal = require('decimal.js');
 
 // This function will handle the incoming HTTP request (i.e. the webhook)
 async function finverseWebhookHandler(req, res, finverseSdk, storeganiseSdk) {
-  // will handle payments webhooks
-  if (req.path === '/payments') {
+  const { event_type } = req.body;
+
+  if (!shouldHandleWebhook(event_type)) {
+    // not handling this event
+    return res.send('OK');
+  }
+
+  if (event_type === 'PAYMENT_EXECUTED' || event_type === 'PAYMENT_FAILED') {
+    // will handle payments webhooks
     const {
-      event_type,
       event_time,
       payment_id,
       payment_method_id,
       external_user_id,
       metadata,
     } = req.body;
-    if (event_type !== 'PAYMENT_EXECUTED' && event_type !== 'PAYMENT_FAILED') {
-      // only handle payment success/failure
-      return res.send('OK');
-    }
 
     // Expectation: Should pass storeganise invoice id in metadata with key `sg_invoice_id`
     const storeganiseInvoiceId = metadata?.sg_invoice_id;
+
+    if (typeof storeganiseInvoiceId !== "string") {
+      console.log("Got non-string invoice id. Metadata does not contain appropriate sg_invoice_id")
+      return res.status(400).send("missing sg_invoice_id in metadata")
+    }
+
     const invoice = await storeganiseSdk.getInvoice(storeganiseInvoiceId);
 
     if (invoice.state === 'failed' || invoice.state === 'paid') {
@@ -63,19 +71,28 @@ async function finverseWebhookHandler(req, res, finverseSdk, storeganiseSdk) {
   }
 
   // will handle payment link webhooks
-  if (req.path === '/payment_links') {
-    const { event_type } = req.body;
-    if (event_type !== 'PAYMENT_LINK_SETUP_SUCCEEDED') {
-      // we will not handle events other than PAYMENT_LINK_SETUP_SUCCEEDED
-      return res.send('OK');
-    }
+  if (event_type === 'PAYMENT_LINK_SETUP_SUCCEEDED') {
     const { payment_method_id, external_user_id } = req.body;
     // Expectation: The storeganise user's id is passed to finverse as the external_user_id
     await storeganiseSdk.savePaymentMethod(payment_method_id, external_user_id);
     return res.send('OK');
   }
 
-  return res.status(404).send(`Path not found: ${req.path}`);
+  console.log('Got unhandled event type.', event_type);
+  return res.status(500).send(`Unhandled event_type: ${event_type}`);
+}
+
+/**
+ * Determine if we should handle webhook or not
+ * @param {string} eventType the `event_type` property of the webhook payload
+ * @returns {eventType is "PAYMENT_LINK_SETUP_SUCCEEDED" | "PAYMENT_EXECUTED" | "PAYMENT_FAILED"}
+ */
+function shouldHandleWebhook(eventType) {
+  return [
+    'PAYMENT_LINK_SETUP_SUCCEEDED',
+    'PAYMENT_EXECUTED',
+    'PAYMENT_FAILED',
+  ].includes(eventType);
 }
 
 /**
