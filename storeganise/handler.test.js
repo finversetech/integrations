@@ -44,7 +44,7 @@ describe('finverseWebhookHandler', () => {
             payment_id: 'finversePaymentId',
             external_user_id: 'storeganiseUserId',
             metadata: {
-              sg_invoice_id: 'storeganiseInvoiceId',
+              storeganise_invoice_id: 'storeganiseInvoiceId',
             },
           },
           headers: { 'fv-signature': 'signature' },
@@ -85,7 +85,7 @@ describe('finverseWebhookHandler', () => {
       expect(mockResponse.send).toHaveBeenCalledWith('OK');
     });
 
-    test('PAYMENT_EXECUTED - missing sg_invoice_id in metadata', async () => {
+    test('PAYMENT_EXECUTED - missing storeganise_invoice_id in metadata', async () => {
       await finverseWebhookHandler(
         {
           body: {
@@ -108,7 +108,7 @@ describe('finverseWebhookHandler', () => {
       expect(mockResponse.status).toHaveBeenCalledWith(400);
 
       expect(mockResponse.send).toHaveBeenCalledTimes(1);
-      expect(mockResponse.send).toHaveBeenCalledWith('missing sg_invoice_id in metadata');
+      expect(mockResponse.send).toHaveBeenCalledWith('missing storeganise_invoice_id in metadata');
     });
 
     test('PAYMENT_EXECUTED - invoice already paid', async () => {
@@ -125,7 +125,7 @@ describe('finverseWebhookHandler', () => {
             payment_id: 'finversePaymentId',
             external_user_id: 'storeganiseUserId',
             metadata: {
-              sg_invoice_id: 'storeganiseInvoiceId',
+              storeganise_invoice_id: 'storeganiseInvoiceId',
             },
           },
           headers: { 'fv-signature': 'signature' },
@@ -159,7 +159,7 @@ describe('finverseWebhookHandler', () => {
             payment_id: 'finversePaymentId',
             external_user_id: 'storeganiseUserId',
             metadata: {
-              sg_invoice_id: 'storeganiseInvoiceId',
+              storeganise_invoice_id: 'storeganiseInvoiceId',
             },
           },
           headers: { 'fv-signature': 'signature' },
