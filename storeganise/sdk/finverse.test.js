@@ -21,10 +21,10 @@ describe('test isTokenValid()', () => {
   });
 
   test('should return true when input is valid JWT that is before expiry time', () => {
-    const expiredJwt =
+    const validJwt =
       'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJPbmxpbmUgSldUIEJ1aWxkZXIiLCJpYXQiOjE3MjI4MzQxMzAsImV4cCI6MTcyMjgzNDEzNiwiYXVkIjoid3d3LmV4YW1wbGUuY29tIiwic3ViIjoianJvY2tldEBleGFtcGxlLmNvbSJ9.OTDgk3sWWAVfUZMREFH10yruP6ASDoI2ulCyceod7Xc';
     jest.useFakeTimers().setSystemTime(new Date('2024-08-01'));
-    expect(isTokenValid(expiredJwt)).toBe(true);
+    expect(isTokenValid(validJwt)).toBe(true);
     jest.useRealTimers();
   });
 });
@@ -35,6 +35,7 @@ describe('Finverse SDK', () => {
   beforeEach(() => {
     jest.restoreAllMocks();
     sdk.fetchFinverse = jest.fn();
+    sdk.fetchAndSetFinverseToken = jest.fn();
   });
 
   test('getPayment', async () => {
@@ -59,5 +60,31 @@ describe('Finverse SDK', () => {
     expect(sdk.verifySignature(validPayload, invalidSignature)).toBe(false);
     expect(sdk.verifySignature(invalidPayload, validSignature)).toBe(false);
     expect(sdk.verifySignature(invalidPayload, invalidSignature)).toBe(false);
+  });
+
+  test('getToken', () => {
+    const dummySdk = new FinverseSdk('clientId', 'clientSecret');
+    dummySdk.token = 'dummy_token';
+
+    expect(dummySdk.getToken()).toBe('dummy_token');
+  });
+
+  test('setAndRefreshToken - valid token', async () => {
+    const validToken =
+      'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJPbmxpbmUgSldUIEJ1aWxkZXIiLCJpYXQiOjE3MjI4MzQxMzAsImV4cCI6MTcyMjgzNDEzNiwiYXVkIjoid3d3LmV4YW1wbGUuY29tIiwic3ViIjoianJvY2tldEBleGFtcGxlLmNvbSJ9.OTDgk3sWWAVfUZMREFH10yruP6ASDoI2ulCyceod7Xc';
+    jest.useFakeTimers().setSystemTime(new Date('2024-08-01'));
+
+    await sdk.setCachedTokenOrRefresh(validToken);
+    expect(sdk.fetchAndSetFinverseToken).toHaveBeenCalledTimes(0);
+    expect(sdk.getToken()).toBe(validToken);
+    jest.useRealTimers();
+  });
+
+  test('setAndRefreshToken - invalid token', async () => {
+    const expiredToken =
+      'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJPbmxpbmUgSldUIEJ1aWxkZXIiLCJpYXQiOjE3MjI4MzQxMzAsImV4cCI6MTcyMjgzNDEzNiwiYXVkIjoid3d3LmV4YW1wbGUuY29tIiwic3ViIjoianJvY2tldEBleGFtcGxlLmNvbSJ9.OTDgk3sWWAVfUZMREFH10yruP6ASDoI2ulCyceod7Xc';
+
+    await sdk.setCachedTokenOrRefresh(expiredToken);
+    expect(sdk.fetchAndSetFinverseToken).toHaveBeenCalledTimes(1);
   });
 });

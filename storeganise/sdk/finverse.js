@@ -68,27 +68,32 @@ class FinverseSdk {
     this.token = '';
   }
 
+  async fetchAndSetFinverseToken() {
+    const { access_token } = await fetch(
+      'https://api.prod.finverse.net/auth/customer/token',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Request-Id': `${Date.now()}`,
+        },
+        body: JSON.stringify({
+          client_id: this.clientId,
+          client_secret: this.clientSecret,
+          grant_type: 'client_credentials',
+        }),
+      }
+    ).then(async (r) => {
+      if (r.ok) return r.json().catch(() => null);
+      throw new Error(`Finverse token error`);
+    });
+    this.token = access_token;
+  }
+
   async fetchFinverse(path, { method = 'GET', body, headers = {} } = {}) {
     if (!isTokenValid(this.token)) {
       // Get an access_token. We will use this to authenticate the request to Finverse
-      const { access_token } = await fetch(
-        'https://api.prod.finverse.net/auth/customer/token',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Request-Id': `${Date.now()}`,
-          },
-          body: JSON.stringify({
-            client_id: this.clientId,
-            client_secret: this.clientSecret,
-            grant_type: 'client_credentials',
-          }),
-        }
-      ).then(async (r) => {
-        if (r.ok) return r.json().catch(() => null);
-        throw new Error(`Finverse token error`);
-      });
+      await this.fetchAndSetFinverseToken();
       this.token = access_token;
     }
 
@@ -107,6 +112,21 @@ class FinverseSdk {
       const errResponse = await r.text();
       throw new Error(`Finverse error: ${errResponse}`);
     });
+  }
+
+  /**
+   * Pass in the cached token, it if is valid, we will set it on the sdk as is, else we will refresh the token
+   * @param {string} token - the cached token
+   */
+  async setCachedTokenOrRefresh(token) {
+    if (isTokenValid(token)) {
+      // token is valid
+      this.token = token;
+      return;
+    }
+
+    // token is not valid, should get new
+    await this.fetchAndSetFinverseToken();
   }
 
   /**
@@ -140,6 +160,13 @@ class FinverseSdk {
     const verify = crypto.createVerify('SHA256');
     verify.update(payloadInBytes).end();
     return verify.verify(publicKey, decodedSignature);
+  }
+
+  /**
+   * @returns {string} the finverse customer token
+   */
+  getToken() {
+    return this.token;
   }
 }
 

@@ -16,41 +16,47 @@ const secretNames = {
 
 const secretManagerClient = new SecretManagerServiceClient();
 // cache the secret values so that we don't need to fetch the values every time we get a request
-const cachedSecretValues = {
+const cachedValues = {
   finverseClientId: '',
   finverseClientSecret: '',
   storeganiseApiKey: '',
+  finverseCustomerToken: '',
 };
 
 // Should set the entry point in Google Cloud Functions to `storeganiseHelper` so that it uses this function
 functions.http('storeganiseHelper', async (req, res) => {
-  if (cachedSecretValues.finverseClientId === '') {
-    cachedSecretValues.finverseClientId = await readSecret(
+  // Potential improvement: Verify fv-signature before requesting secrets and setting up SDKs
+  
+  if (cachedValues.finverseClientId === '') {
+    cachedValues.finverseClientId = await readSecret(
       secretManagerClient,
       secretNames.finverseClientId
     );
   }
-  if (cachedSecretValues.finverseClientSecret === '') {
-    cachedSecretValues.finverseClientSecret = await readSecret(
+  if (cachedValues.finverseClientSecret === '') {
+    cachedValues.finverseClientSecret = await readSecret(
       secretManagerClient,
       secretNames.finverseClientSecret
     );
   }
-  if (cachedSecretValues.storeganiseApiKey === '') {
-    cachedSecretValues.storeganiseApiKey = await readSecret(
+  if (cachedValues.storeganiseApiKey === '') {
+    cachedValues.storeganiseApiKey = await readSecret(
       secretManagerClient,
       secretNames.storeganiseApiKey
     );
   }
 
   const finverseSdk = new FinverseSdk(
-    cachedSecretValues.finverseClientId,
-    cachedSecretValues.finverseClientSecret
+    cachedValues.finverseClientId,
+    cachedValues.finverseClientSecret
   );
   const storeganiseSdk = new StoreganiseSdk(
     storeganiseBusinessCode,
-    cachedSecretValues.storeganiseApiKey
+    cachedValues.storeganiseApiKey
   );
+
+  await finverseSdk.setCachedTokenOrRefresh(cachedValues.finverseCustomerToken);
+  cachedValues.finverseCustomerToken = finverseSdk.getToken();
 
   await finverseWebhookHandler(req, res, finverseSdk, storeganiseSdk);
 });
