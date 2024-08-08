@@ -149,7 +149,7 @@ class FinverseSdk {
    * @param {string} payload - Raw payload
    * @param {string} signature - Signature as found in fv-signature header
    */
-  verifySignature(payload, signature) {
+  static verifySignature(payload, signature) {
     // signature is encoded in base64 and should be decoded
     const decodedSignature = Buffer.from(signature, 'base64');
     const textEncoder = new TextEncoder();

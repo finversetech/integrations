@@ -2,16 +2,6 @@ const Decimal = require('decimal.js');
 
 // This function will handle the incoming HTTP request (i.e. the webhook)
 async function finverseWebhookHandler(req, res, finverseSdk, storeganiseSdk) {
-  const isSignatureValid = finverseSdk.verifySignature(
-    req.rawBody.toString(),
-    req.headers['fv-signature']
-  );
-
-  if (!isSignatureValid) {
-    // if signature is not valid, i.e. webhook was not sent by Finverse, we should return 401
-    return res.status(401).send('Unauthorized');
-  }
-
   // will handle payments webhooks
   if (req.path === '/payments') {
     const {

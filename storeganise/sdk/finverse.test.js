@@ -56,10 +56,10 @@ describe('Finverse SDK', () => {
     const invalidPayload = '{"key":"value"}';
     const invalidSignature = 'abcdefghi';
 
-    expect(sdk.verifySignature(validPayload, validSignature)).toBe(true);
-    expect(sdk.verifySignature(validPayload, invalidSignature)).toBe(false);
-    expect(sdk.verifySignature(invalidPayload, validSignature)).toBe(false);
-    expect(sdk.verifySignature(invalidPayload, invalidSignature)).toBe(false);
+    expect(FinverseSdk.verifySignature(validPayload, validSignature)).toBe(true);
+    expect(FinverseSdk.verifySignature(validPayload, invalidSignature)).toBe(false);
+    expect(FinverseSdk.verifySignature(invalidPayload, validSignature)).toBe(false);
+    expect(FinverseSdk.verifySignature(invalidPayload, invalidSignature)).toBe(false);
   });
 
   test('getToken', () => {
