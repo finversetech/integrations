@@ -26,7 +26,7 @@ describe('finverseWebhookHandler', () => {
     };
   });
 
-  describe('/payments', () => {
+  describe('payments webhooks', () => {
     test('PAYMENT_EXECUTED - happy path', async () => {
       mockStoreganiseSdk.getInvoice.mockResolvedValue({
         state: 'processing',
@@ -37,7 +37,6 @@ describe('finverseWebhookHandler', () => {
 
       await finverseWebhookHandler(
         {
-          path: '/payments',
           body: {
             event_type: 'PAYMENT_EXECUTED',
             event_time: 'eventTime',
@@ -93,7 +92,6 @@ describe('finverseWebhookHandler', () => {
 
       await finverseWebhookHandler(
         {
-          path: '/payments',
           body: {
             event_type: 'PAYMENT_EXECUTED',
             event_time: 'eventTime',
@@ -128,7 +126,6 @@ describe('finverseWebhookHandler', () => {
 
       await finverseWebhookHandler(
         {
-          path: '/payments',
           body: {
             event_type: 'PAYMENT_FAILED',
             event_time: 'eventTime',
@@ -157,32 +154,12 @@ describe('finverseWebhookHandler', () => {
         'failed'
       );
     });
-
-    test('Unhandled event', async () => {
-      await finverseWebhookHandler(
-        {
-          path: '/payments',
-          body: {
-            event_type: 'PAYMENT_SUBMITTED',
-          },
-          headers: { 'fv-signature': 'signature' },
-          rawBody: 'rawBody',
-        },
-        mockResponse,
-        mockFinverseSdk,
-        mockStoreganiseSdk
-      );
-
-      expect(mockResponse.send).toHaveBeenCalledTimes(1);
-      expect(mockResponse.send).toHaveBeenCalledWith('OK');
-    });
   });
 
-  describe('/payment_links', () => {
+  describe('payment link webhooks', () => {
     test('PAYMENT_LINK_SETUP_SUCCEEDED', async () => {
       await finverseWebhookHandler(
         {
-          path: '/payment_links',
           body: {
             event_type: 'PAYMENT_LINK_SETUP_SUCCEEDED',
             payment_method_id: 'finversePaymentMethodId',
@@ -204,33 +181,15 @@ describe('finverseWebhookHandler', () => {
       expect(mockResponse.send).toHaveBeenCalledTimes(1);
       expect(mockResponse.send).toHaveBeenCalledWith('OK');
     });
-
-    test('Other event', async () => {
-      await finverseWebhookHandler(
-        {
-          path: '/payment_links',
-          body: {
-            event_type: 'PAYMENT_LINK_PAID',
-          },
-          headers: { 'fv-signature': 'signature' },
-          rawBody: 'rawBody',
-        },
-        mockResponse,
-        mockFinverseSdk,
-        mockStoreganiseSdk
-      );
-
-      expect(mockStoreganiseSdk.savePaymentMethod).toHaveBeenCalledTimes(0);
-      expect(mockResponse.send).toHaveBeenCalledTimes(1);
-      expect(mockResponse.send).toHaveBeenCalledWith('OK');
-    });
   });
 
-  test('unknown path - should return 404', async () => {
+  test('unhandled event - should return 200', async () => {
     await finverseWebhookHandler(
       {
-        path: '/unhandled_path',
         headers: { 'fv-signature': 'signature' },
+        body: {
+          event_type: 'PAYMENT_SUBMITTED',
+        },
         rawBody: 'rawBody',
       },
       mockResponse,
@@ -238,12 +197,7 @@ describe('finverseWebhookHandler', () => {
       mockStoreganiseSdk
     );
 
-    expect(mockResponse.status).toHaveBeenCalledTimes(1);
-    expect(mockResponse.status).toHaveBeenCalledWith(404);
-
     expect(mockResponse.send).toHaveBeenCalledTimes(1);
-    expect(mockResponse.send).toHaveBeenCalledWith(
-      'Path not found: /unhandled_path'
-    );
+    expect(mockResponse.send).toHaveBeenCalledWith('OK');
   });
 });
