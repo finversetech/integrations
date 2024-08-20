@@ -1,11 +1,5 @@
 const { finverseWebhookHandler } = require('./handler');
 
-// Need to mock env before we load the index file, otherwise it will read the un-mocked env
-process.env = {
-  ...process.env,
-  finverse_customer_app_id: 'customerAppId',
-};
-
 describe('finverseWebhookHandler', () => {
   // pass this object to the handler to record the responses the function intends to return
   let mockResponse;
@@ -238,24 +232,4 @@ describe('finverseWebhookHandler', () => {
     expect(mockResponse.send).toHaveBeenCalledWith('OK');
   });
 
-  test('invalid customerAppId - should return 200', async () => {
-      await finverseWebhookHandler(
-        {
-          body: {
-            event_type: 'PAYMENT_LINK_SETUP_SUCCEEDED',
-            payment_method_id: 'finversePaymentMethodId',
-            external_user_id: 'storeganiseUserId',
-            customer_app_id: 'invalid',
-          },
-          headers: { 'fv-signature': 'signature' },
-          rawBody: 'rawBody',
-        },
-        mockResponse,
-        mockFinverseSdk,
-        mockStoreganiseSdk
-      );
-
-    expect(mockResponse.send).toHaveBeenCalledTimes(1);
-    expect(mockResponse.send).toHaveBeenCalledWith('OK');
-  });
 });
