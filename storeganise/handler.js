@@ -3,6 +3,7 @@ const Decimal = require('decimal.js');
 // This function will handle the incoming HTTP request (i.e. the webhook)
 async function finverseWebhookHandler(req, res, finverseSdk, storeganiseSdk) {
   const { event_type } = req.body;
+  const finverseCustomerAppId = process.env.finverse_customer_app_id;
 
   if (!shouldHandleWebhook(event_type)) {
     // not handling this event
@@ -16,8 +17,15 @@ async function finverseWebhookHandler(req, res, finverseSdk, storeganiseSdk) {
       payment_id,
       payment_method_id,
       external_user_id,
+      customer_app_id,
       metadata,
     } = req.body;
+
+    // the customer_app_id must match the env variable
+    if (customer_app_id != finverseCustomerAppId) {
+      console.warn(`Unexpected customer_app_id: ${customer_app_id} != ${finverseCustomerAppId}`)
+      return res.status('OK')
+    }
 
     // Expectation: Should pass storeganise invoice id in metadata with key `storeganise_invoice_id`
     const storeganiseInvoiceId = metadata?.storeganise_invoice_id;
