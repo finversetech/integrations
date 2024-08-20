@@ -43,6 +43,7 @@ describe('finverseWebhookHandler', () => {
             payment_method_id: 'finversePaymentMethodId',
             payment_id: 'finversePaymentId',
             external_user_id: 'storeganiseUserId',
+            customer_app_id: 'customerAppId',
             metadata: {
               storeganise_invoice_id: 'storeganiseInvoiceId',
             },
@@ -94,6 +95,7 @@ describe('finverseWebhookHandler', () => {
             payment_method_id: 'finversePaymentMethodId',
             payment_id: 'finversePaymentId',
             external_user_id: 'storeganiseUserId',
+            customer_app_id: 'customerAppId',
             metadata: {},
           },
           headers: { 'fv-signature': 'signature' },
@@ -124,6 +126,7 @@ describe('finverseWebhookHandler', () => {
             payment_method_id: 'finversePaymentMethodId',
             payment_id: 'finversePaymentId',
             external_user_id: 'storeganiseUserId',
+            customer_app_id: 'customerAppId',
             metadata: {
               storeganise_invoice_id: 'storeganiseInvoiceId',
             },
@@ -158,6 +161,7 @@ describe('finverseWebhookHandler', () => {
             payment_method_id: 'finversePaymentMethodId',
             payment_id: 'finversePaymentId',
             external_user_id: 'storeganiseUserId',
+            customer_app_id: 'customerAppId',
             metadata: {
               storeganise_invoice_id: 'storeganiseInvoiceId',
             },
@@ -190,6 +194,7 @@ describe('finverseWebhookHandler', () => {
             event_type: 'PAYMENT_LINK_SETUP_SUCCEEDED',
             payment_method_id: 'finversePaymentMethodId',
             external_user_id: 'storeganiseUserId',
+            customer_app_id: 'customerAppId',
           },
           headers: { 'fv-signature': 'signature' },
           rawBody: 'rawBody',
@@ -226,4 +231,5 @@ describe('finverseWebhookHandler', () => {
     expect(mockResponse.send).toHaveBeenCalledTimes(1);
     expect(mockResponse.send).toHaveBeenCalledWith('OK');
   });
+
 });

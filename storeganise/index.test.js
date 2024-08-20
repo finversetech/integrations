@@ -26,17 +26,40 @@ process.env = {
   ...process.env,
   storeganise_business_code: 'businesscode',
   finverse_client_id: 'finverseClientId',
+  finverse_customer_app_id: 'customerAppId',
 };
 
 // load the index file now
 require('./index');
 
 describe('Storeganise Helper', () => {
+  test('invalid customer_app_id', async () => {
+    const storeganiseHelper = getFunction('storeganiseHelper');
+    const req = {
+      body: { key: 'value', customer_app_id: 'invalid' },
+      rawBody: 'rawBody',
+      headers: {
+        'fv-signature': 'SignatureBASE64',
+      },
+    };
+    const res = {
+      send: jest.fn(),
+    };
+    res.status = jest.fn().mockReturnValue(res);
+
+    await storeganiseHelper(req, res);
+
+    expect(res.status).toHaveBeenCalledTimes(1);
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.send).toHaveBeenCalledTimes(1);
+    expect(res.send).toHaveBeenCalledWith('invalid customer_app_id in webhook payload');
+  });
+
   test('invalid signature', async () => {
     FinverseSdk.verifySignature = jest.fn().mockReturnValueOnce(false);
     const storeganiseHelper = getFunction('storeganiseHelper');
     const req = {
-      body: { key: 'value' },
+      body: { key: 'value', customer_app_id: 'customerAppId' },
       rawBody: 'rawBody',
       headers: {
         'fv-signature': 'SignatureBASE64',
@@ -82,7 +105,7 @@ describe('Storeganise Helper', () => {
 
     const storeganiseHelper = getFunction('storeganiseHelper');
     const req = {
-      body: { key: 'value' },
+      body: { key: 'value', customer_app_id: 'customerAppId' },
       rawBody: 'rawBody',
       headers: {
         'fv-signature': 'SignatureBASE64',

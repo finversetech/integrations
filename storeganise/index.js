@@ -10,6 +10,7 @@ const storeganiseBusinessCode = process.env.storeganise_business_code;
 
 // the finverse client id is a non-sensitive field, okay to store as run-time variable
 const finverseClientId = process.env.finverse_client_id;
+const finverseCustomerAppId = process.env.finverse_customer_app_id;
 
 const secretNames = {
   storeganiseApiKey: process.env.storeganise_api_key,
@@ -26,6 +27,12 @@ const cachedValues = {
 
 // Should set the entry point in Google Cloud Functions to `storeganiseHelper` so that it uses this function
 functions.http('storeganiseHelper', async (req, res) => {
+  // the customer_app_id must match the env variable
+  if (req.body.customer_app_id != finverseCustomerAppId) {
+    console.warn(`Unexpected customer_app_id: ${req.body.customer_app_id} != ${finverseCustomerAppId}`)
+    return res.status(400).send("invalid customer_app_id in webhook payload")
+  }
+
   const isSignatureValid = FinverseSdk.verifySignature(
     req.rawBody?.toString() ?? '',
     req.headers['fv-signature'] ?? ''
