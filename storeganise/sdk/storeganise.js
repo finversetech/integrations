@@ -62,6 +62,9 @@ class StoreganiseSdk {
             id: finversePaymentMethodId,
             type: 'custom',
           },
+          custom: {
+            finverse_payment_method_id: finversePaymentMethodId,
+          },
         },
       });
     } catch (err) {
