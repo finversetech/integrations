@@ -15,7 +15,7 @@ describe('Storeganise SDK', () => {
     expect(sdk.fetchSg).toHaveBeenCalledWith('users/storeganiseUserId', {
       method: 'PUT',
       body: {
-        custom: {
+        customFields: {
           finverse_payment_method_id: 'finversePaymentMethodId',
         },
       },

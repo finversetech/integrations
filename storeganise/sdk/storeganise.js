@@ -58,7 +58,7 @@ class StoreganiseSdk {
       await this.fetchSg(`users/${storeganiseUserId}`, {
         method: 'PUT',
         body: {
-          custom: {
+          customFields: {
             finverse_payment_method_id: finversePaymentMethodId,
           },
         },
