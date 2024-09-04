@@ -42,7 +42,7 @@ functions.http('storeganiseHelper', async (req, res) => {
     return res.status(401).send('Unauthorized');
   }
 
-  // Now that we know this is a valid webhook intended for this handler, we should fetch the secrets 
+  // Now that we know this is a valid webhook intended for this handler, we should fetch the secrets
   const finverseClientSecret = await readSecret(
     secretNames.finverseClientSecret
   );
@@ -72,12 +72,6 @@ async function readSecret(secretName) {
   return response.payload?.data.toString();
 }
 
-// used to verify webhook signatures. Can be retrieved from https://docs.finverse.com/#bf53157c-8de2-418f-be88-38f81332be4b
-const finversePublicKey = `-----BEGIN PUBLIC KEY-----
-MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEuZId/6U0gKLodSihwC/EuMGtULx8
-G3r7X7nZ3KWO5uNVtRTC64MH/1faq9zRp/2iIjCT8erSxiyO6y8wnlqMqw==
------END PUBLIC KEY-----`;
-
 /**
  * Verify that finverse signature is legitimiate
  * @param {string} rawPayload the incoming raw webhook payload
@@ -85,6 +79,12 @@ G3r7X7nZ3KWO5uNVtRTC64MH/1faq9zRp/2iIjCT8erSxiyO6y8wnlqMqw==
  * @returns {bool} decision on whether the finverse signature is legitimate or not
  */
 async function verifyFinverseSignature(rawPayload, signature) {
+  // used to verify webhook signatures. Can be retrieved from https://docs.finverse.com/#bf53157c-8de2-418f-be88-38f81332be4b
+  const finversePublicKey = `-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEuZId/6U0gKLodSihwC/EuMGtULx8
+G3r7X7nZ3KWO5uNVtRTC64MH/1faq9zRp/2iIjCT8erSxiyO6y8wnlqMqw==
+-----END PUBLIC KEY-----`;
+
   // finverse signature is base64 encoded
   const decodedSignature = Buffer.from(signature, 'base64');
 
