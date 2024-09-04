@@ -1,3 +1,5 @@
+// Note: This is a simple SDK that uses fetch to make API calls to Finverse.
+// Finverse also supports a Typescript SDK: https://www.npmjs.com/package/@finverse/sdk-typescript
 class FinverseSdk {
   /**
    * Finverse client id

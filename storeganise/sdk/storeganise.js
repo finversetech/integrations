@@ -1,3 +1,4 @@
+// Note: This is a simple SDK that uses fetch to make calls to the Storeganise API
 class StoreganiseSdk {
   /**
    * The entity's business code. This determines which URL to hit
