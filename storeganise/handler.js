@@ -10,30 +10,31 @@ async function finverseWebhookHandler(req, res, finverseSdk, storeganiseSdk) {
   }
 
   if (event_type === 'PAYMENT_EXECUTED' || event_type === 'PAYMENT_FAILED') {
-    // will handle payments webhooks
+    // Handle webhooks when a payment gets executed or fails
     const {
       event_time,
       payment_id,
       payment_method_id,
-      external_user_id,
+      external_user_id, // ASSUMPTION: The storeganise user id is passed as external_user_id when creating any payment resource
       metadata,
     } = req.body;
 
     // Expectation: Should pass storeganise invoice id in metadata with key `storeganise_invoice_id`
     const storeganiseInvoiceId = metadata?.storeganise_invoice_id;
 
-    if (typeof storeganiseInvoiceId !== "string") {
-      console.log("Got non-string invoice id. Metadata does not contain appropriate storeganise_invoice_id")
-      return res.status(400).send("missing storeganise_invoice_id in metadata")
+    if (typeof storeganiseInvoiceId !== 'string') {
+      console.log(
+        'Got non-string invoice id. Metadata does not contain appropriate storeganise_invoice_id'
+      );
+      return res.status(400).send('missing storeganise_invoice_id in metadata');
     }
 
     const invoice = await storeganiseSdk.getInvoice(storeganiseInvoiceId);
 
-    if (invoice.state === 'failed' || invoice.state === 'paid') {
-      // if the invoice has already been marked into a final state, then no further action needed
-      // This check is to make sure we don't double-process a webhook and record multiple payments
-      // Storeganise also implements some level of idempotency to ensure identical payments don't get recorded multiple times
-      return res.send('OK');
+    // only process event if the storeganise invoice is in some non-final state
+    if (isStoreganiseInvoicePayable(invoice.state) === false) {
+      // storeganise invoice cannot be paid; should log some interal alert to manually investigate
+      return res.status(500).send('internal error');
     }
 
     if (event_type === 'PAYMENT_EXECUTED') {
@@ -58,28 +59,20 @@ async function finverseWebhookHandler(req, res, finverseSdk, storeganiseSdk) {
         event_time,
         payment_id
       );
+    } else {
+      // if the payment failed, lets mark the invoice as failed
+      await storeganiseSdk.setInvoiceStatus(storeganiseInvoiceId, 'failed');
     }
 
-    // regardless of EXECUTED or FAILED, we should update the invoice status
-    const storeganiseInvoiceStatus =
-      event_type === 'PAYMENT_EXECUTED' ? 'paid' : 'failed';
-    await storeganiseSdk.setInvoiceStatus(
-      storeganiseInvoiceId,
-      storeganiseInvoiceStatus
-    );
     return res.send('OK');
   }
 
-  // will handle payment link webhooks
-  if (event_type === 'PAYMENT_LINK_SETUP_SUCCEEDED') {
-    const { payment_method_id, external_user_id } = req.body;
-    // Expectation: The storeganise user's id is passed to finverse as the external_user_id
-    await storeganiseSdk.savePaymentMethod(payment_method_id, external_user_id);
-    return res.send('OK');
-  }
+  // if we are here, that means event_type = PAYMENT_LINK_SETUP_SUCCEEDED
 
-  console.log('Got unhandled event type.', event_type);
-  return res.status(500).send(`Unhandled event_type: ${event_type}`);
+  const { payment_method_id, external_user_id } = req.body;
+  // ASSUMPTION: The storeganise user's id is passed to finverse as the external_user_id
+  await storeganiseSdk.savePaymentMethod(payment_method_id, external_user_id);
+  return res.send('OK');
 }
 
 /**
@@ -93,6 +86,14 @@ function shouldHandleWebhook(eventType) {
     'PAYMENT_EXECUTED',
     'PAYMENT_FAILED',
   ].includes(eventType);
+}
+
+/**
+ * Determine if a storeganise invoice is payable or not
+ * @param {string} status
+ */
+function isStoreganiseInvoicePayable(status) {
+  return ['draft', 'sent', 'pending', 'overdue', 'failed'].includes(status);
 }
 
 /**
